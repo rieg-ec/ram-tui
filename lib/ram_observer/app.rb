@@ -68,13 +68,31 @@ module RamObserver
     private
 
     def refresh_data
+      expanded_pids = collect_expanded_pids(@roots)
       entries = @process_collector.collect
       @roots = @tree_builder.build(entries)
+      restore_expanded(@roots, expanded_pids)
       @system_stats = @system_collector.collect
       record_timeline(entries)
       rebuild_flat_list
       enrich_visible_memory
       @last_refresh = Time.now
+    end
+
+    def collect_expanded_pids(nodes)
+      pids = Set.new
+      nodes.each do |node|
+        pids.add(node.pid) if node.expanded
+        pids.merge(collect_expanded_pids(node.children))
+      end
+      pids
+    end
+
+    def restore_expanded(nodes, pids)
+      nodes.each do |node|
+        node.expanded = true if pids.include?(node.pid)
+        restore_expanded(node.children, pids)
+      end
     end
 
     def enrich_visible_memory
