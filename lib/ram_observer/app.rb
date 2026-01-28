@@ -128,7 +128,6 @@ module RamObserver
 
     def render
       @screen.refresh_dimensions
-      @screen.clear
 
       @header.render(@screen, @system_stats, frozen: @frozen)
 
