@@ -48,7 +48,7 @@ module RamObserver
       end
 
       def write(y, x, text, color_pair: COLOR_DEFAULT, bold: false, max_width: nil)
-        return if y < 0 || y >= @height || x >= @width
+        return if y < 0 || y >= @height || x < 0 || x >= @width
         text = text[0...(max_width)] if max_width
         text = text[0...(@width - x)] if x + text.length > @width
         return if text.empty?

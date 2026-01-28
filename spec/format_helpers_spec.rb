@@ -48,5 +48,15 @@ RSpec.describe RamObserver::FormatHelpers do
       bar = described_class.pressure_bar(50)
       expect(bar).to eq("█" * 5 + "░" * 5)
     end
+
+    it "clamps negative percent to all empty" do
+      bar = described_class.pressure_bar(-10)
+      expect(bar).to eq("░" * 10)
+    end
+
+    it "clamps percent above 100 to all filled" do
+      bar = described_class.pressure_bar(150)
+      expect(bar).to eq("█" * 10)
+    end
   end
 end

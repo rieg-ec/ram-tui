@@ -97,13 +97,12 @@ module RamObserver
       def sparkline(data_points)
         return "" unless data_points && data_points.length > 1
         values = data_points.map { |dp| dp[:rss_kb] }
+        recent = values.last(12)
         min_val = values.min.to_f
         max_val = values.max.to_f
         range = max_val - min_val
-        return SPARKLINE_CHARS[0] * [values.length, 12].min if range == 0
+        return SPARKLINE_CHARS[0] * recent.length if range == 0
 
-        # Take last 12 points
-        recent = values.last(12)
         recent.map do |v|
           idx = ((v - min_val) / range * (SPARKLINE_CHARS.length - 1)).round
           SPARKLINE_CHARS[idx]
@@ -111,10 +110,11 @@ module RamObserver
       end
 
       def render_scrollbar(screen, y_start, height, offset, total)
-        return if total <= height
+        return if total <= height || height <= 0
 
         bar_height = [(height.to_f / total * height).ceil, 1].max
         bar_pos = (offset.to_f / total * height).round
+        bar_pos = [[bar_pos, 0].max, height - bar_height].min
 
         height.times do |i|
           char = (i >= bar_pos && i < bar_pos + bar_height) ? "█" : "│"

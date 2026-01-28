@@ -88,6 +88,26 @@ RSpec.describe RamObserver::TreeBuilder do
       expect(roots).to eq([])
     end
 
+    it "handles mutual parent-child cycle without infinite loop" do
+      # PID 10 has ppid 20, PID 20 has ppid 10 -- a cycle
+      entries = [
+        make_entry(pid: 10, ppid: 20, rss: 300),
+        make_entry(pid: 20, ppid: 10, rss: 200),
+      ]
+
+      roots = subject.build(entries)
+      # The cycle should be broken: first entry becomes child of second,
+      # second becomes root since making it a child of first would create a cycle.
+      # Verify no infinite recursion in total_rss_kb
+      expect { roots.map(&:total_rss_kb) }.not_to raise_error
+      # Verify every entry is reachable exactly once
+      flat = subject.flatten(roots)
+      roots.each { |r| r.expanded = true }
+      flat = subject.flatten(roots)
+      pids = flat.map { |f| f[:entry].pid }
+      expect(pids).to contain_exactly(10, 20)
+    end
+
     it "flattens deep nesting with correct depths when all expanded" do
       entries = [
         make_entry(pid: 1, ppid: 0, rss: 400),

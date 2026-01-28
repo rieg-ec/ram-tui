@@ -10,7 +10,9 @@ module RamObserver
       @rss_kb = rss_kb
       @vsz_kb = vsz_kb
       @command = command
-      @comm_name = File.basename(command.split(/\s+/).first.to_s)
+      first_token = command.strip.split(/\s+/).first.to_s
+      @comm_name = File.basename(first_token)
+      @comm_name = command.strip if @comm_name.empty?
       @elapsed = elapsed
       @started = started
       @compressed_bytes = 0

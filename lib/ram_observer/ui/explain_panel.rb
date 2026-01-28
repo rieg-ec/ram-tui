@@ -31,7 +31,20 @@ module RamObserver
 
       def word_wrap(text, max_width)
         return [""] if text.nil? || text.empty?
-        text.gsub(/\n/, " ").scan(/.{1,#{max_width}}(?:\s|\Z)/).map(&:strip)
+        flat = text.gsub(/\n/, " ")
+        lines = []
+        while flat.length > max_width
+          break_at = flat.rindex(" ", max_width)
+          if break_at && break_at > 0
+            lines << flat[0...break_at]
+            flat = flat[(break_at + 1)..]
+          else
+            lines << flat[0...max_width]
+            flat = flat[max_width..]
+          end
+        end
+        lines << flat unless flat.empty?
+        lines.empty? ? [""] : lines
       end
     end
   end

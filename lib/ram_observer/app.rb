@@ -79,16 +79,17 @@ module RamObserver
 
     def enrich_visible_memory
       return if @flat_entries.empty?
-      list_height = @screen.height - 4
+      list_height = [@screen.height - 4, 0].max
       visible_start = @scroll_offset
       visible_end = [@scroll_offset + list_height, @flat_entries.length].min
-      visible_pids = @flat_entries[visible_start...visible_end].map { |r| r[:entry].pid }
+      visible_pids = (@flat_entries[visible_start...visible_end] || []).map { |r| r[:entry].pid }
 
       top_pids = visible_pids.first(10)
+      flat_snapshot = @flat_entries
       Thread.new do
         top_pids.each do |pid|
           detail = @memory_detail.collect_for(pid)
-          entry = @flat_entries.find { |r| r[:entry].pid == pid }&.dig(:entry)
+          entry = flat_snapshot.find { |r| r[:entry].pid == pid }&.dig(:entry)
           next unless entry
           entry.compressed_bytes = detail[:compressed]
           entry.swap_bytes = detail[:swap]
@@ -115,6 +116,7 @@ module RamObserver
 
       list_height = @screen.height - 4
       list_height -= (@explain_visible ? 8 : 0)
+      list_height = [list_height, 0].max
 
       current_message = if @message_until && Time.now < @message_until
                           @message
@@ -225,7 +227,7 @@ module RamObserver
     def move_cursor(delta)
       return if @flat_entries.empty?
       @cursor = [[@cursor + delta, @flat_entries.length - 1].min, 0].max
-      list_height = @screen.height - 4 - (@explain_visible ? 8 : 0)
+      list_height = [(@screen.height - 4 - (@explain_visible ? 8 : 0)), 1].max
       if @cursor < @scroll_offset
         @scroll_offset = @cursor
       elsif @cursor >= @scroll_offset + list_height
@@ -300,8 +302,10 @@ module RamObserver
 
     def parent_chain(entry)
       chain = []
+      visited = Set.new
       current = entry.parent
-      while current
+      while current && !visited.include?(current.pid)
+        visited << current.pid
         chain << current.comm_name
         current = current.parent
       end

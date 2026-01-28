@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(chmod:*)",
+      "Bash(git -C /Users/rieg/cs/fun/ram-observer status:*)",
+      "Bash(git -C /Users/rieg/cs/fun/ram-observer commit -m \"$\\(cat <<''EOF''\nfeat: project scaffold with process collector and tree builder\nEOF\n\\)\")",
+      "Bash(git -C /Users/rieg/cs/fun/ram-observer log --oneline)",
+      "Bash(ruby -e:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(bundle exec ruby:*)"
+    ]
+  }
+}

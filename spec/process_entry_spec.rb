@@ -30,6 +30,16 @@ RSpec.describe RamObserver::ProcessEntry do
       entry = make_entry(command: "launchd")
       expect(entry.comm_name).to eq("launchd")
     end
+
+    it "handles command with leading spaces" do
+      entry = make_entry(command: "  /usr/bin/ruby script.rb")
+      expect(entry.comm_name).to eq("ruby")
+    end
+
+    it "returns non-empty name for empty command" do
+      entry = make_entry(command: "")
+      expect(entry.comm_name).to eq("")
+    end
   end
 
   describe "#rss_bytes" do

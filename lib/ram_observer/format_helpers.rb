@@ -21,7 +21,7 @@ module RamObserver
 
     def self.pressure_bar(percent, width: 10)
       filled = (percent / 100.0 * width).round
-      filled = [filled, width].min
+      filled = [[filled, 0].max, width].min
       "█" * filled + "░" * (width - filled)
     end
   end

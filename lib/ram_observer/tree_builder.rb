@@ -8,7 +8,7 @@ module RamObserver
       roots = []
       entries.each do |entry|
         parent = by_pid[entry.ppid]
-        if parent && parent != entry
+        if parent && parent != entry && !ancestor_of?(entry, parent, by_pid)
           entry.parent = parent
           parent.children << entry
         else
@@ -44,6 +44,19 @@ module RamObserver
                        end
         flatten_node(child, depth + 1, child_prefix, last, result, sort_key)
       end
+    end
+
+    # Returns true if `child` is already an ancestor of `parent` via ppid chain,
+    # which would create a cycle if we made `child` a child of `parent`.
+    def ancestor_of?(child, parent, by_pid)
+      visited = Set.new
+      current = parent
+      while current
+        return false unless visited.add?(current.pid)
+        return true if current.pid == child.pid
+        current = current.parent
+      end
+      false
     end
 
     def sort_children(children, sort_key)
