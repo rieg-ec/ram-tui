@@ -78,7 +78,15 @@ module RamObserver
           spark
         )
 
-        color = selected ? Screen::COLOR_SELECTED : Screen::COLOR_DEFAULT
+        color = if selected
+                  Screen::COLOR_SELECTED
+                elsif entry.rss_kb > 1_048_576
+                  Screen::COLOR_RED
+                elsif entry.rss_kb > 524_288
+                  Screen::COLOR_YELLOW
+                else
+                  Screen::COLOR_DEFAULT
+                end
         screen.write_line(y, line, color_pair: color)
       end
 
