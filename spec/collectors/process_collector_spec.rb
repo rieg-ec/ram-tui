@@ -41,4 +41,30 @@ RSpec.describe RamObserver::Collectors::ProcessCollector do
       expect(entries.first).to be_a(RamObserver::ProcessEntry)
     end
   end
+
+  describe "edge cases" do
+    it "returns empty array for empty output" do
+      entries = subject.parse("")
+      expect(entries).to eq([])
+    end
+
+    it "returns empty array for header-only output" do
+      output = "    PID  PPID    RSS      VSZ ELAPSED STARTED                      COMMAND\n"
+      entries = subject.parse(output)
+      expect(entries).to eq([])
+    end
+
+    it "skips malformed lines and parses valid ones" do
+      output = <<~PS
+          PID  PPID    RSS      VSZ ELAPSED STARTED                      COMMAND
+        bad line
+            1     0  14784 435241984   45:25 Wed Jan 28 17:21:44 2026     /sbin/launchd
+        another bad line
+      PS
+
+      entries = subject.parse(output)
+      expect(entries.length).to eq(1)
+      expect(entries[0].pid).to eq(1)
+    end
+  end
 end
