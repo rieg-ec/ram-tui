@@ -67,10 +67,12 @@ module RamObserver
 
         spark = sparkline(timeline[entry.pid])
 
+        display_rss_kb = entry.leaf? ? entry.rss_kb : entry.total_rss_kb
+
         line = format_columns(
           entry.pid.to_s,
           "#{tree_str}#{indicator}#{name}",
-          h.kb_human(entry.rss_kb),
+          h.kb_human(display_rss_kb),
           h.kb_human(entry.vsz_kb),
           h.bytes_human(entry.compressed_bytes),
           h.bytes_human(entry.swap_bytes),
@@ -80,9 +82,9 @@ module RamObserver
 
         color = if selected
                   Screen::COLOR_SELECTED
-                elsif entry.rss_kb > 1_048_576
+                elsif display_rss_kb > 1_048_576
                   Screen::COLOR_RED
-                elsif entry.rss_kb > 524_288
+                elsif display_rss_kb > 524_288
                   Screen::COLOR_YELLOW
                 else
                   Screen::COLOR_DEFAULT
