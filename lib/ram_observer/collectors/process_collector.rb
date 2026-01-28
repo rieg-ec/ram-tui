@@ -34,7 +34,7 @@ module RamObserver
           pid: pid, ppid: ppid, rss_kb: rss, vsz_kb: vsz,
           command: command, elapsed: etime, started: started
         )
-      rescue
+      rescue => _e
         nil
       end
     end
