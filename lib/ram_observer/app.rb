@@ -41,6 +41,8 @@ module RamObserver
       @flat_entries = []
       @system_stats = nil
       @last_refresh = Time.at(0)
+      @enrich_thread = nil
+      @last_enrich = Time.at(0)
     end
 
     def run
@@ -97,20 +99,25 @@ module RamObserver
 
     def enrich_visible_memory
       return if @flat_entries.empty?
+      return if @enrich_thread&.alive?
+      return if (Time.now - @last_enrich) < 10
+
       list_height = [@screen.height - 4, 0].max
       visible_start = @scroll_offset
       visible_end = [@scroll_offset + list_height, @flat_entries.length].min
       visible_pids = (@flat_entries[visible_start...visible_end] || []).map { |r| r[:entry].pid }
 
-      top_pids = visible_pids.first(10)
+      top_pids = visible_pids.first(5)
       flat_snapshot = @flat_entries
-      Thread.new do
+      @last_enrich = Time.now
+      @enrich_thread = Thread.new do
         top_pids.each do |pid|
           detail = @memory_detail.collect_for(pid)
           entry = flat_snapshot.find { |r| r[:entry].pid == pid }&.dig(:entry)
           next unless entry
           entry.dirty_bytes = detail[:dirty]
           entry.swap_bytes = detail[:swap]
+          sleep(0.5)
         end
       end
     end
