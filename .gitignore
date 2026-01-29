@@ -1,0 +1,24 @@
+# macOS
+.DS_Store
+
+# Claude Code
+.claude/
+
+# Ruby / Bundler
+vendor/bundle/
+.bundle/
+*.gem
+
+# RSpec
+coverage/
+
+# Editor / IDE
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# Temporary files
+tmp/
+*.log
