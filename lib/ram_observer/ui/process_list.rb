@@ -30,7 +30,7 @@ module RamObserver
       private
 
       def render_column_header(screen, y, sort_name)
-        cols = format_columns("PID", "NAME", "RSS", "VIRT", "COMP", "SWAP", "AGE", "SPARK")
+        cols = format_columns("PID", "NAME", "RSS", "VIRT", "DIRTY", "SWAP", "AGE", "SPARK")
         # Mark sorted column
         cols = cols.gsub(sort_name, "#{sort_name}↓")
         screen.write_line(y, cols, color_pair: Screen::COLOR_DIM, bold: true)
@@ -74,7 +74,7 @@ module RamObserver
           "#{tree_str}#{indicator}#{name}",
           h.kb_human(display_rss_kb),
           h.kb_human(entry.vsz_kb),
-          h.bytes_human(entry.compressed_bytes),
+          h.bytes_human(entry.dirty_bytes),
           h.bytes_human(entry.swap_bytes),
           entry.age_human,
           spark

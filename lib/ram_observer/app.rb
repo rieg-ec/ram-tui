@@ -25,8 +25,8 @@ module RamObserver
       @cursor = 0
       @scroll_offset = 0
       @sort_key = :rss_kb
-      @sort_keys = [:rss_kb, :vsz_kb, :compressed_bytes, :swap_bytes, :age_seconds]
-      @sort_names = ["RSS", "VIRT", "COMP", "SWAP", "AGE"]
+      @sort_keys = [:rss_kb, :vsz_kb, :dirty_bytes, :swap_bytes, :age_seconds]
+      @sort_names = ["RSS", "VIRT", "DIRTY", "SWAP", "AGE"]
       @sort_index = 0
       @search_mode = false
       @search_query = ""
@@ -109,7 +109,7 @@ module RamObserver
           detail = @memory_detail.collect_for(pid)
           entry = flat_snapshot.find { |r| r[:entry].pid == pid }&.dig(:entry)
           next unless entry
-          entry.compressed_bytes = detail[:compressed]
+          entry.dirty_bytes = detail[:dirty]
           entry.swap_bytes = detail[:swap]
         end
       end
@@ -299,7 +299,7 @@ module RamObserver
           Full command: #{entry.command}
           PID: #{entry.pid}, Parent PID: #{entry.ppid}
           RSS: #{h.kb_human(entry.rss_kb)}, Virtual: #{h.kb_human(entry.vsz_kb)}
-          Compressed: #{h.bytes_human(entry.compressed_bytes)}, Swap: #{h.bytes_human(entry.swap_bytes)}
+          Dirty: #{h.bytes_human(entry.dirty_bytes)}, Swap: #{h.bytes_human(entry.swap_bytes)}
           Age: #{entry.age_human}
           Parent chain: #{parent_chain(entry)}
         PROMPT
@@ -342,7 +342,7 @@ module RamObserver
           {
             pid: e.pid, ppid: e.ppid, name: e.comm_name,
             command: e.command, rss_kb: e.rss_kb, vsz_kb: e.vsz_kb,
-            compressed_bytes: e.compressed_bytes, swap_bytes: e.swap_bytes,
+            dirty_bytes: e.dirty_bytes, swap_bytes: e.swap_bytes,
             age: e.age_human, started: e.started, depth: row[:depth]
           }
         end

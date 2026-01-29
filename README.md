@@ -6,7 +6,7 @@ Unlike Activity Monitor or htop, ram-observer lets you expand parent processes (
 
 ## Requirements
 
-- macOS (uses `ps`, `vm_stat`, `footprint`, `memory_pressure`)
+- macOS (uses `ps`, `vm_stat`, `vmmap`, `memory_pressure`)
 - Ruby 3.x
 - [Claude CLI](https://github.com/anthropics/claude-code) (for the AI explain feature)
 
@@ -29,7 +29,7 @@ ruby bin/ram-observer
 | `↑`/`↓` or `k`/`j` | Navigate processes |
 | `→`/`←` or `l`/`h` | Expand / collapse tree node |
 | `f` | Toggle freeze mode (pause live updates) |
-| `s` | Cycle sort column (RSS, VIRT, COMP, SWAP, AGE) |
+| `s` | Cycle sort column (RSS, VIRT, DIRTY, SWAP, AGE) |
 | `/` | Search / filter by process name |
 | `e` | AI explain selected process |
 | `x` | Export snapshot to JSON |
@@ -41,7 +41,7 @@ ruby bin/ram-observer
 |--------|---------|
 | RSS | Physical memory actively used (Resident Set Size) |
 | VIRT | Total virtual address space (includes shared libs, mapped files) |
-| COMP | Memory compressed in RAM by macOS |
+| DIRTY | Memory written by the process, can't be reclaimed without swapping |
 | SWAP | Memory paged out to disk |
 | AGE | Time since process launched |
 | SPARK | RSS trend sparkline |

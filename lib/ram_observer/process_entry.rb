@@ -1,7 +1,7 @@
 module RamObserver
   class ProcessEntry
     attr_accessor :pid, :ppid, :rss_kb, :vsz_kb, :command, :comm_name,
-                  :elapsed, :started, :compressed_bytes, :swap_bytes,
+                  :elapsed, :started, :dirty_bytes, :swap_bytes,
                   :children, :expanded, :depth, :parent
 
     def initialize(pid:, ppid:, rss_kb:, vsz_kb:, command:, elapsed:, started:)
@@ -15,7 +15,7 @@ module RamObserver
       @comm_name = command.strip if @comm_name.empty?
       @elapsed = elapsed
       @started = started
-      @compressed_bytes = 0
+      @dirty_bytes = 0
       @swap_bytes = 0
       @children = []
       @expanded = false

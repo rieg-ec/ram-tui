@@ -2,47 +2,47 @@ module RamObserver
   module Collectors
     class MemoryDetail
       def collect_for(pid)
-        output = `footprint #{pid} 2>/dev/null`
-        parse_footprint(output)
+        output = `vmmap -summary #{pid.to_i} 2>/dev/null`
+        parse_vmmap(output)
       rescue => _e
-        { compressed: 0, swap: 0 }
-      end
-
-      def enrich_entries(entries, visible_pids)
-        visible_pids.each do |pid|
-          entry = entries.find { |e| e.pid == pid }
-          next unless entry
-
-          detail = collect_for(pid)
-          entry.compressed_bytes = detail[:compressed]
-          entry.swap_bytes = detail[:swap]
-        end
+        { dirty: 0, swap: 0 }
       end
 
       private
 
-      def parse_footprint(output)
-        compressed = 0
+      # Parse the first TOTAL line from vmmap -summary output.
+      # Columns: VIRTUAL, RESIDENT, DIRTY, SWAPPED, VOLATILE, NONVOL, EMPTY, COUNT
+      def parse_vmmap(output)
+        dirty = 0
         swap = 0
 
         output.each_line do |line|
-          if line =~ /(\d+(?:\.\d+)?)\s*(KB|MB|GB)\s+compressed/i
-            compressed = parse_size($1.to_f, $2)
-          end
-          if line =~ /(\d+(?:\.\d+)?)\s*(KB|MB|GB)\s+swapped/i
-            swap = parse_size($1.to_f, $2)
-          end
+          next unless line.start_with?("TOTAL")
+          tokens = line.split(/\s+/)
+          # TOTAL <virtual> <resident> <dirty> <swapped> ...
+          dirty = parse_size_token(tokens[3]) if tokens[3]
+          swap = parse_size_token(tokens[4]) if tokens[4]
+          break # only first TOTAL line
         end
 
-        { compressed: compressed, swap: swap }
+        { dirty: dirty, swap: swap }
       end
 
-      def parse_size(value, unit)
-        case unit.upcase
-        when "KB" then (value * 1024).to_i
-        when "MB" then (value * 1024 * 1024).to_i
-        when "GB" then (value * 1024 * 1024 * 1024).to_i
-        else value.to_i
+      def parse_size_token(token)
+        return 0 unless token
+        if token =~ /^([\d.]+)(KB|MB|GB|TB)$/i
+          value = $1.to_f
+          case $2.upcase
+          when "KB" then (value * 1024).to_i
+          when "MB" then (value * 1024 * 1024).to_i
+          when "GB" then (value * 1024 * 1024 * 1024).to_i
+          when "TB" then (value * 1024 * 1024 * 1024 * 1024).to_i
+          else 0
+          end
+        elsif token =~ /^\d+$/
+          token.to_i
+        else
+          0
         end
       end
     end

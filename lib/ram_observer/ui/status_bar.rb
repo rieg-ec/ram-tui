@@ -4,7 +4,7 @@ module RamObserver
       COLUMN_HINTS = {
         "RSS" => "RSS: Physical memory actively used by this process (Resident Set Size)",
         "VIRT" => "VIRT: Total virtual address space including shared libs and memory-mapped files",
-        "COMP" => "COMP: Memory compressed in RAM by macOS to save space without swapping to disk",
+        "DIRTY" => "DIRTY: Memory written by the process that can't be reclaimed without swapping to disk",
         "SWAP" => "SWAP: Memory paged out to disk when RAM is full",
         "AGE" => "AGE: Time since the process was launched",
       }.freeze
