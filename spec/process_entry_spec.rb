@@ -36,9 +36,34 @@ RSpec.describe RamObserver::ProcessEntry do
       expect(entry.comm_name).to eq("ruby")
     end
 
-    it "returns non-empty name for empty command" do
+    it "returns [unknown] for empty command" do
       entry = make_entry(command: "")
-      expect(entry.comm_name).to eq("")
+      expect(entry.comm_name).to eq("[unknown]")
+    end
+
+    it "labels Chrome renderer helper processes" do
+      entry = make_entry(command: "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/133/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer) --type=renderer --some-flag")
+      expect(entry.comm_name).to eq("Google Chrome: renderer")
+    end
+
+    it "labels Chrome GPU helper processes" do
+      entry = make_entry(command: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome Helper (GPU) --type=gpu-process")
+      expect(entry.comm_name).to eq("Google Chrome: gpu")
+    end
+
+    it "labels Chrome extension processes" do
+      entry = make_entry(command: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome Helper (Renderer) --type=renderer --extension-process")
+      expect(entry.comm_name).to eq("Google Chrome: extension")
+    end
+
+    it "labels Electron app helper processes" do
+      entry = make_entry(command: "/Applications/Slack.app/Contents/Frameworks/Slack Helper (Renderer).app/Contents/MacOS/Slack Helper (Renderer) --type=renderer")
+      expect(entry.comm_name).to eq("Slack: renderer")
+    end
+
+    it "labels utility sub-types with short name" do
+      entry = make_entry(command: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome Helper --type=utility --utility-sub-type=network.mojom.NetworkService")
+      expect(entry.comm_name).to eq("Google Chrome: network")
     end
   end
 

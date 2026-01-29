@@ -10,9 +10,7 @@ module RamObserver
       @rss_kb = rss_kb
       @vsz_kb = vsz_kb
       @command = command
-      first_token = command.strip.split(/\s+/).first.to_s
-      @comm_name = File.basename(first_token)
-      @comm_name = command.strip if @comm_name.empty?
+      @comm_name = extract_comm_name(command)
       @elapsed = elapsed
       @started = started
       @dirty_bytes = 0
@@ -55,6 +53,47 @@ module RamObserver
     end
 
     private
+
+    def extract_comm_name(cmd)
+      cmd = cmd.to_s.strip
+      return "[unknown]" if cmd.empty?
+
+      # Detect Chromium/Electron helper processes (Chrome, Slack, Spotify, etc.)
+      if cmd.include?("--type=")
+        return chromium_helper_name(cmd)
+      end
+
+      basename = File.basename(cmd.split(/\s+/).first.to_s)
+      basename.empty? ? cmd : basename
+    end
+
+    def chromium_helper_name(cmd)
+      # Extract app name from .app path
+      app_name = if cmd =~ %r{/([^/]+)\.app/}
+                   $1.sub(/\s+Helper.*/, "")
+                 else
+                   "Chromium"
+                 end
+
+      # Extract --type=
+      type = cmd[/--type=(\S+)/, 1] || "unknown"
+
+      # Refine the label
+      label = case type
+              when "renderer"
+                cmd.include?("--extension-process") ? "extension" : "renderer"
+              when "gpu-process"
+                "gpu"
+              when "utility"
+                sub = cmd[/--utility-sub-type=(\S+)/, 1] || ""
+                short = sub.split(".").find { |p| !%w[mojom].include?(p) && p =~ /[A-Z]/ }
+                short ? short.gsub(/Service$/, "").downcase : "utility"
+              else
+                type
+              end
+
+      "#{app_name}: #{label}"
+    end
 
     def parse_elapsed(str)
       # etime format: [[dd-]hh:]mm:ss
