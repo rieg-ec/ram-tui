@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ram-observer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    body {
+      background-color: #0a0a0a;
+    }
+    .cursor {
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+  </style>
+</head>
+<body class="font-mono text-gray-300 min-h-screen flex flex-col items-center justify-center px-4 py-16">
+
+  <!-- Hero -->
+  <header class="text-center mb-12">
+    <h1 class="text-4xl md:text-5xl font-medium text-green-400 mb-4">ram-observer</h1>
+    <p class="text-gray-500 text-lg">See where your memory goes.</p>
+  </header>
+
+  <!-- Terminal Demo -->
+  <div class="w-full max-w-3xl mb-12 flex justify-center">
+    <pre id="terminal" class="text-xs md:text-sm text-green-400/90 leading-relaxed overflow-x-auto text-left"></pre>
+  </div>
+
+  <!-- Install -->
+  <div class="mb-16">
+    <button
+      onclick="copyInstall()"
+      class="group border border-green-500/30 hover:border-green-500/60 px-6 py-3 rounded transition-colors"
+    >
+      <code class="text-green-400">gem install ram-observer</code>
+      <span id="copy-feedback" class="ml-3 text-gray-500 text-sm opacity-0 transition-opacity">Copied!</span>
+    </button>
+  </div>
+
+  <!-- Footer -->
+  <footer class="text-gray-600 text-sm">
+    <a href="https://github.com/rieg/ram-observer" class="hover:text-gray-400 transition-colors">GitHub</a>
+    <span class="mx-2">·</span>
+    <span>macOS only</span>
+  </footer>
+
+  <script>
+    const terminalLines = [
+      '┌─ ram-observer ─────────────────────────────────────────────────┐',
+      '│ System: 16GB physical │ Used: 11.2G │ Swap: 2.1G │ Pres: ██░░  │',
+      '├────────────────────────────────────────────────────────────────┤',
+      '│ PID    NAME              RSS     VIRT   DIRTY   SWAP    AGE    │',
+      '│ ▸ 482   iTerm2          1.2G    4.8G    340M   120M    3d 2h   │',
+      '│   ├─ 1205  zsh           28M    410M      4M     0B    3d 2h   │',
+      '│   ├─ 8834  zsh           32M    415M      6M     0B   1h 12m   │',
+      '│   │  └─ 9012  node      480M    1.2G     80M    40M      45m   │',
+      '│   └─ 9401  ruby          64M    380M     12M     0B       2m   │',
+      '│ ▸ 301   Chrome          3.4G    8.2G    890M   450M    2d 5h   │',
+      '│   119   WindowServer    1.1G    3.2G    200M    30M   5d 11h   │',
+      '│   502   Spotlight       890M    2.1G    340M   180M   5d 11h   │',
+      '├────────────────────────────────────────────────────────────────┤',
+      '│ [LIVE] ↑↓ Nav  ←→ Expand  f Freeze  / Search  e Explain  q Quit│',
+      '└────────────────────────────────────────────────────────────────┘',
+    ];
+
+    const terminal = document.getElementById('terminal');
+    let lineIndex = 0;
+
+    function typeLine() {
+      if (lineIndex < terminalLines.length) {
+        terminal.textContent += terminalLines[lineIndex] + '\n';
+        lineIndex++;
+        setTimeout(typeLine, 100);
+      } else {
+        // Add blinking cursor briefly
+        const cursor = document.createElement('span');
+        cursor.className = 'cursor';
+        cursor.textContent = '█';
+        terminal.appendChild(cursor);
+
+        // Remove cursor after 2 seconds
+        setTimeout(() => cursor.remove(), 2000);
+      }
+    }
+
+    // Start animation after short delay
+    setTimeout(typeLine, 300);
+
+    function copyInstall() {
+      navigator.clipboard.writeText('gem install ram-observer');
+      const feedback = document.getElementById('copy-feedback');
+      feedback.classList.remove('opacity-0');
+      feedback.classList.add('opacity-100');
+      setTimeout(() => {
+        feedback.classList.remove('opacity-100');
+        feedback.classList.add('opacity-0');
+      }, 1500);
+    }
+  </script>
+</body>
+</html>
