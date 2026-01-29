@@ -161,12 +161,14 @@ module RamObserver
         @explain_panel.render(@screen, y: explain_y, text: @explain_text, pid: @explain_pid)
       end
 
+      selected = @flat_entries[@cursor]&.dig(:entry)
       @status_bar.render(
         @screen,
         mode: @frozen ? :frozen : :live,
         hint_column: hint_col,
         search_query: @search_mode ? @search_query : nil,
-        message: current_message
+        message: current_message,
+        selected_entry: selected
       )
 
       @screen.refresh

@@ -9,7 +9,7 @@ module RamObserver
         "AGE" => "AGE: Time since the process was launched",
       }.freeze
 
-      def render(screen, mode:, hint_column: nil, search_query: nil, message: nil)
+      def render(screen, mode:, hint_column: nil, search_query: nil, message: nil, selected_entry: nil)
         y = screen.height - 2
 
         if search_query
@@ -22,6 +22,8 @@ module RamObserver
         hint_y = screen.height - 1
         if message
           screen.write_line(hint_y, " #{message}", color_pair: Screen::COLOR_YELLOW)
+        elsif selected_entry
+          screen.write_line(hint_y, " PID #{selected_entry.pid}: #{selected_entry.command}", color_pair: Screen::COLOR_DIM)
         elsif hint_column && COLUMN_HINTS[hint_column]
           screen.write_line(hint_y, " #{COLUMN_HINTS[hint_column]}", color_pair: Screen::COLOR_DIM)
         else
